@@ -1,20 +1,116 @@
-// ProcessLottery.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <string>
+#include <vector>
+#include <cstdlib>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+//class for processes
+class Process {
+	//class variables to define the propeties of each process
+	int _pid;
+	std::vector<int> _tickets;
+
+public:
+	//constructor
+	Process(int pid) {
+		_pid = pid;
+	}
+
+	//gives the process the given lottery ticket number
+	void addLotteryTicket(int ticket) {
+		_tickets.push_back(ticket);
+	}
+
+	//removes the given lottery number from this process
+	void removeLotteryTicket(int ticket) {
+		for (int i = 0; i < _tickets.size(); i++) {
+			if (_tickets.at(i) == ticket) {
+				_tickets.at(i) = _tickets.back();
+				_tickets.pop_back();
+				break;
+			}
+		}
+	}
+
+	//returns the process id of this process
+	int getPid() {
+		return _pid;
+	}
+
+	bool hasTicket(int ticketNumber) {
+		for (int i = 0; i < _tickets.size(); i++) {
+			if (_tickets.at(i) == ticketNumber) {
+				return true;
+			}
+		}
+		return false;
+	}
+};
+
+
+//class for scheduler
+class Scheduler {
+	std::vector<Process> _processes;
+	int _pidIdx;
+
+	int findPid(int pid) {
+		for (int i = 0; i < _processes.size(); i++) {
+			if (_processes.at(i).getPid() == pid) {
+				return i;
+			}
+		}
+	}
+
+public:
+	void addProcess(int pid) {
+		Process proc(pid);
+		_processes.push_back(proc);
+	}
+
+	void removeProcess(int pid) {
+		_processes.at(findPid(pid)) = _processes.back();
+		_processes.pop_back();
+	}
+
+	void alocTickets() {
+		for (int i = 1; i < 101; i++) {
+			_processes.at(_pidIdx).addLotteryTicket(i);
+			nextProc();
+		}
+	}
+
+	void nextProc() {
+		if (_pidIdx >= _processes.size() - 1) {
+			_pidIdx = 0;
+		}
+		else {
+			_pidIdx++;
+		}
+	}
+
+	int findWinner(int ticketNumber) {
+		for (int i = 0; i < _processes.size(); i++) {
+			if (_processes.at(i).hasTicket(ticketNumber)) {
+				return _processes.at(i).getPid();
+			}
+		}
+	}
+};
+
+int main() {
+	Scheduler mySchedule;
+
+	mySchedule.addProcess(1);
+	mySchedule.addProcess(2);
+	mySchedule.addProcess(3);
+	mySchedule.addProcess(4);
+
+	mySchedule.alocTickets();
+
+	srand((unsigned)time(NULL));
+	int winningTicket = 1 + (rand() % 100);
+
+	std::cout << "Process " << mySchedule.findWinner(winningTicket) << " has won the lottery!";
+
+
+	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
